@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Camera, ChevronDown, ChevronUp, Mail, MapPin, Sparkles } from "lucide-react";
-import { useState } from "react";
+import {
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import heroImage from "../assets/model-hero.jpg";
 import gallery1 from "../assets/model-gallery-1.jpg";
@@ -73,9 +80,124 @@ const galleryImages = [
   { src: gallery4, alt: "Sofía Vélez en retrato lifestyle" },
 ];
 
+function MobileCarousel({
+  images,
+}: {
+  images: { src: string; alt: string }[];
+}) {
+  const [index, setIndex] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const goTo = (i: number) => {
+    const next = Math.max(0, Math.min(i, images.length - 1));
+    setIndex(next);
+    trackRef.current?.scrollTo({
+      left: (trackRef.current.children[next] as HTMLElement)?.offsetLeft ?? 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const onScroll = () => {
+      const scrollLeft = track.scrollLeft;
+      const width = track.offsetWidth;
+      const newIndex = Math.round(scrollLeft / width);
+      setIndex(Math.max(0, Math.min(newIndex, images.length - 1)));
+    };
+
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return () => track.removeEventListener("scroll", onScroll);
+  }, [images.length]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      goTo(index + (diff > 0 ? 1 : -1));
+    }
+    touchStartX.current = null;
+  };
+
+  return (
+    <div className="relative sm:hidden">
+      <div
+        ref={trackRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="-mx-6 flex snap-x snap-mandatory overflow-x-auto scroll-smooth px-6 pb-4"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {images.map((image) => (
+          <div
+            key={image.alt}
+            className="mr-4 shrink-0 snap-center last:mr-0"
+            style={{ width: "calc(100% - 3rem)" }}
+          >
+            <div className="group relative overflow-hidden rounded-2xl">
+              <img
+                src={image.src}
+                alt={image.alt}
+                width={1024}
+                height={1280}
+                loading="lazy"
+                className="aspect-[3/4] w-full object-cover"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso/30 via-transparent to-transparent" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <button
+          type="button"
+          aria-label="Anterior"
+          onClick={() => goTo(index - 1)}
+          disabled={index === 0}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-all disabled:opacity-40 active:scale-95"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        <div className="flex items-center gap-2">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Ir a foto ${i + 1}`}
+              onClick={() => goTo(i)}
+              className={`h-2 rounded-full transition-all ${
+                i === index
+                  ? "w-6 bg-primary"
+                  : "w-2 bg-border hover:bg-primary/50"
+              }`}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          aria-label="Siguiente"
+          onClick={() => goTo(index + 1)}
+          disabled={index === images.length - 1}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-all disabled:opacity-40 active:scale-95"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Index() {
-  const [showAllGallery, setShowAllGallery] = useState(false);
-  const mobileLimit = 4;
 
   return (
     <main className="min-h-screen bg-background">
@@ -217,47 +339,32 @@ function Index() {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-            {galleryImages.map((image, index) => {
-              const hiddenOnMobile = index >= mobileLimit && !showAllGallery;
-              return (
-                <div
-                  key={image.alt}
-                  className={`group relative overflow-hidden rounded-2xl ${
-                    hiddenOnMobile ? "hidden sm:block" : "block"
-                  } ${index === 0 || index === 3 ? "sm:col-span-2 lg:col-span-2" : ""}`}
-                >
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    width={1024}
-                    height={1280}
-                    loading="lazy"
-                    className="aspect-[3/4] w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:aspect-[4/5]"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                </div>
-              );
-            })}
+          {/* Desktop grid */}
+          <div className="hidden gap-4 sm:grid sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+            {galleryImages.map((image, index) => (
+              <div
+                key={image.alt}
+                className={`group relative overflow-hidden rounded-2xl ${
+                  index === 0 || index === 3
+                    ? "sm:col-span-2 lg:col-span-2"
+                    : ""
+                }`}
+              >
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  width={1024}
+                  height={1280}
+                  loading="lazy"
+                  className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              </div>
+            ))}
           </div>
 
-          {galleryImages.length > mobileLimit && (
-            <button
-              type="button"
-              onClick={() => setShowAllGallery((prev) => !prev)}
-              className="mx-auto mt-8 flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-medium text-foreground shadow-sm transition-all hover:bg-accent sm:hidden"
-            >
-              {showAllGallery ? (
-                <>
-                  Ver menos <ChevronUp className="h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  Ver más fotos <ChevronDown className="h-4 w-4" />
-                </>
-              )}
-            </button>
-          )}
+          {/* Mobile carousel */}
+          <MobileCarousel images={galleryImages} />
         </div>
       </section>
 
