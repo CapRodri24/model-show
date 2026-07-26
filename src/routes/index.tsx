@@ -125,8 +125,8 @@ function Index() {
               alt="Sofía Vélez, modelo editorial"
               width={1024}
               height={1280}
+              loading="eager"
               className="aspect-[4/5] w-full rounded-[2rem] object-cover shadow-2xl shadow-espresso/10"
-              priority={true}
             />
           </div>
         </div>
