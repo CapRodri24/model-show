@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Camera, Mail, MapPin, Sparkles } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp, Mail, MapPin, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 import heroImage from "../assets/model-hero.jpg";
 import gallery1 from "../assets/model-gallery-1.jpg";
