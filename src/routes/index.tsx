@@ -93,7 +93,7 @@ function MobileCarousel({
     const next = Math.max(0, Math.min(i, images.length - 1));
     setIndex(next);
     trackRef.current?.scrollTo({
-      left: trackRef.current.children[next]?.offsetLeft ?? 0,
+      left: (trackRef.current.children[next] as HTMLElement)?.offsetLeft ?? 0,
       behavior: "smooth",
     });
   };
