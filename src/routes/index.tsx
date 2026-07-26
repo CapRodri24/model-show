@@ -74,6 +74,9 @@ const galleryImages = [
 ];
 
 function Index() {
+  const [showAllGallery, setShowAllGallery] = useState(false);
+  const mobileLimit = 4;
+
   return (
     <main className="min-h-screen bg-background">
       {/* Hero */}
