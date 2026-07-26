@@ -217,26 +217,47 @@ function Index() {
             </p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {galleryImages.map((image, index) => (
-              <div
-                key={image.alt}
-                className={`group relative overflow-hidden rounded-2xl ${
-                  index === 0 || index === 3 ? "sm:col-span-2 lg:col-span-2" : ""
-                }`}
-              >
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  width={1024}
-                  height={1280}
-                  loading="lazy"
-                  className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              </div>
-            ))}
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+            {galleryImages.map((image, index) => {
+              const hiddenOnMobile = index >= mobileLimit && !showAllGallery;
+              return (
+                <div
+                  key={image.alt}
+                  className={`group relative overflow-hidden rounded-2xl ${
+                    hiddenOnMobile ? "hidden sm:block" : "block"
+                  } ${index === 0 || index === 3 ? "sm:col-span-2 lg:col-span-2" : ""}`}
+                >
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    width={1024}
+                    height={1280}
+                    loading="lazy"
+                    className="aspect-[3/4] w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:aspect-[4/5]"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                </div>
+              );
+            })}
           </div>
+
+          {galleryImages.length > mobileLimit && (
+            <button
+              type="button"
+              onClick={() => setShowAllGallery((prev) => !prev)}
+              className="mx-auto mt-8 flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-medium text-foreground shadow-sm transition-all hover:bg-accent sm:hidden"
+            >
+              {showAllGallery ? (
+                <>
+                  Ver menos <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Ver más fotos <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          )}
         </div>
       </section>
 
