@@ -3,10 +3,10 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
-  "scripts": {
+    "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build:netlify": "vite build --mode production && echo '=== BUILD COMPLETED ===' && find . -type d -name 'dist' -o -name '.output' -o -name '.nitro' | head -10 && ls -la dist/ 2>/dev/null || echo 'No dist folder' && ls -la .output/ 2>/dev/null || echo 'No .output folder'",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
